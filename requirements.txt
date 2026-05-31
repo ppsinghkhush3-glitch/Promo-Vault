@@ -1,3 +1,4 @@
 pyTelegramBotAPI
 telethon
 uv
+python-dotenv
