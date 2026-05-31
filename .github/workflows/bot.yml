@@ -5,12 +5,12 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'  # restarts every 5 min if it crashes
+    - cron: '*/5 * * * *'
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
-    timeout-minutes: 360  # 6 hours max per run
+    timeout-minutes: 360
 
     steps:
       - name: Checkout code
@@ -23,6 +23,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Show files (debug)
+        run: ls -la
 
       - name: Run bot
         env:
