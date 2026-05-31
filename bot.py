@@ -35,8 +35,6 @@ ADMINS_FILE = "admins.json"
 BANNED_FILE = "banned.json"
 STATS_FILE  = "stats.json"
  
-bot = telebot.TeleBot(API_TOKEN)
- 
 # ─── PERSISTENCE LAYERS ───────────────────────────────────
  
 def load_json(path, default):
