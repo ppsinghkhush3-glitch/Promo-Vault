@@ -81,7 +81,18 @@ def save_data(data):
  
 ADMINS = [str(a) for a in load_admins()]
 BANNED = [str(b) for b in load_banned()]
- 
+
+def check_membership(user_id: int) -> list[dict]:
+    not_joined = []
+    for ch in CHANNELS:
+        try:
+            member = bot.get_chat_member(ch["id"], user_id)
+            if member.status in ("left", "kicked", "restricted"):
+                not_joined.append(ch)
+        except Exception:
+            not_joined.append(ch)
+    return not_joined
+
 # ─── AUTHORIZATION UTILS ──────────────────────────────────
  
 def is_owner(uid): return str(uid) == str(OWNER_ID)
@@ -335,6 +346,37 @@ def admin_commands_msg(msg):
 @bot.callback_query_handler(func=lambda c: c.data == "open_main_menu")
 def open_main_menu(call):
     if ban_gate(call): return
+    
+    not_joined = check_membership(call.from_user.id)
+    
+    if not_joined:
+        # Build keyboard showing only unjoined channels
+        markup = InlineKeyboardMarkup()
+        for ch in not_joined:
+            markup.add(InlineKeyboardButton(f"🔗 {ch['name']}", url=ch['link']))
+        markup.add(InlineKeyboardButton("✅ I've Joined All — Open Menu", callback_data="open_main_menu"))
+        
+        bot.answer_callback_query(call.id, "❌ You haven't joined all channels!", show_alert=True)
+        try:
+            bot.edit_message_text(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                text=(
+                    "⚠️ *You haven't joined all required channels yet!*\n\n"
+                    "📢 *Still need to join:*\n"
+                    "━━━━━━━━━━━━━━━\n" +
+                    "\n".join(f"• {ch['name']}" for ch in not_joined) +
+                    "\n━━━━━━━━━━━━━━━\n\n"
+                    "Join them, then tap the button again 👇"
+                ),
+                parse_mode="Markdown",
+                reply_markup=markup
+            )
+        except Exception:
+            pass
+        return
+    
+    # All joined — proceed
     bot.answer_callback_query(call.id, "✅ Welcome!", show_alert=False)
     name = call.from_user.first_name or "User"
     text = (
@@ -356,7 +398,7 @@ def open_main_menu(call):
         )
     except Exception:
         bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=main_menu())
- 
+   
 # ─── PANEL CALLBACKS ──────────────────────────────────────
  
 @bot.callback_query_handler(func=lambda c: c.data == "owner_panel")
