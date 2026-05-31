@@ -346,23 +346,35 @@ def admin_commands_msg(msg):
 @bot.callback_query_handler(func=lambda c: c.data == "open_main_menu")
 def open_main_menu(call):
     if ban_gate(call): return
-    
-    not_joined = check_membership(call.from_user.id)
-    
+
+    uid = call.from_user.id
+    not_joined = []
+
+    for ch in CHANNELS:
+        try:
+            member = bot.get_chat_member(ch["id"], uid)
+            print(f"DEBUG {ch['name']} → status: {member.status}")
+            if member.status in ("left", "kicked"):
+                not_joined.append(ch)
+        except Exception as e:
+            print(f"DEBUG {ch['name']} → EXCEPTION: {e}")
+            not_joined.append(ch)
+
+    print(f"DEBUG uid={uid} not_joined={[c['name'] for c in not_joined]}")
+
     if not_joined:
-        # Build keyboard showing only unjoined channels
         markup = InlineKeyboardMarkup()
         for ch in not_joined:
             markup.add(InlineKeyboardButton(f"🔗 {ch['name']}", url=ch['link']))
         markup.add(InlineKeyboardButton("✅ I've Joined All — Open Menu", callback_data="open_main_menu"))
-        
-        bot.answer_callback_query(call.id, "❌ You haven't joined all channels!", show_alert=True)
+
+        bot.answer_callback_query(call.id, "❌ Join all channels first!", show_alert=True)
         try:
             bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
                 text=(
-                    "⚠️ *You haven't joined all required channels yet!*\n\n"
+                    "⚠️ *You haven't joined all required channels!*\n\n"
                     "📢 *Still need to join:*\n"
                     "━━━━━━━━━━━━━━━\n" +
                     "\n".join(f"• {ch['name']}" for ch in not_joined) +
@@ -372,11 +384,11 @@ def open_main_menu(call):
                 parse_mode="Markdown",
                 reply_markup=markup
             )
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"DEBUG edit failed: {e}")
         return
-    
-    # All joined — proceed
+
+    # All joined
     bot.answer_callback_query(call.id, "✅ Welcome!", show_alert=False)
     name = call.from_user.first_name or "User"
     text = (
