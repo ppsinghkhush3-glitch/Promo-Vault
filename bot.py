@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-API_TOKEN = "8512147231:AAGaP341NJbWIDLjIhysu0t4hh_xYWugNQo"
+API_TOKEN = os.environ.get("API_TOKEN")
 bot = telebot.TeleBot(API_TOKEN, threaded=True)
 
 OWNER_ID = "8820883004"
