@@ -881,7 +881,16 @@ def gate(msg):
     bot.send_message(msg.chat.id, "Use /start to open the menu.")
  
 # ─── RUNTIME ──────────────────────────────────────────────
- 
-if __name__ == "__main__":
+ if __name__ == "__main__":
+    import time
     print("Bot started. Polling...")
-    bot.infinity_polling(timeout=20, long_polling_timeout=10)
+    while True:
+        try:
+            bot.infinity_polling(
+                timeout=60,
+                long_polling_timeout=30
+            )
+        except Exception as e:
+            print(f"Polling crashed: {e}")
+            print("Restarting in 5 seconds...")
+            time.sleep(5)
