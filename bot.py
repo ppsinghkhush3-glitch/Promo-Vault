@@ -209,7 +209,30 @@ def show_main_menu_edit(call):
         bot.send_message(call.message.chat.id, text, parse_mode="Markdown", reply_markup=main_menu())
  
 # ─── CORE COMMAND HANDLERS ────────────────────────────────
- 
+def force_join_gate(call) -> bool:
+    """Returns True (blocked) if user hasn't joined all channels."""
+    if is_admin(call.from_user.id) or is_owner(call.from_user.id):
+        return False  # admins bypass
+    not_joined = check_membership(call.from_user.id)
+    if not_joined:
+        markup = InlineKeyboardMarkup()
+        for ch in not_joined:
+            markup.add(InlineKeyboardButton(f"🔗 {ch['name']}", url=ch['link']))
+        markup.add(InlineKeyboardButton("✅ I've Joined All — Open Menu", callback_data="open_main_menu"))
+        bot.answer_callback_query(call.id, "❌ Join all channels first!", show_alert=True)
+        bot.send_message(
+            call.message.chat.id,
+            "⚠️ *You haven't joined all required channels!*\n\n"
+            "━━━━━━━━━━━━━━━\n" +
+            "\n".join(f"• {ch['name']}" for ch in not_joined) +
+            "\n━━━━━━━━━━━━━━━\n\n"
+            "Join them all, then tap the button again 👇",
+            parse_mode="Markdown",
+            reply_markup=markup
+        )
+        return True
+    return False
+
 @bot.message_handler(commands=["start"])
 def start(msg):
     # 1. Ban check
@@ -592,6 +615,7 @@ def ap_listlinks(call):
 @bot.callback_query_handler(func=lambda c: c.data == "menu_files")
 def menu_files(call):
     if ban_gate(call): return
+    if force_join_gate(call): return  # ← ADD THIS
     bot.answer_callback_query(call.id)
     files = load_files()
     if not files:
@@ -608,6 +632,7 @@ def menu_files(call):
 @bot.callback_query_handler(func=lambda c: c.data == "menu_links")
 def menu_links(call):
     if ban_gate(call): return
+    if force_join_gate(call): return  # ← ADD THIS
     bot.answer_callback_query(call.id)
     links  = load_links()
     markup = InlineKeyboardMarkup()
@@ -621,6 +646,7 @@ def menu_links(call):
 @bot.callback_query_handler(func=lambda c: c.data == "menu_all")
 def menu_all(call):
     if ban_gate(call): return
+    if force_join_gate(call): return  # ← ADD THIS
     bot.answer_callback_query(call.id)
     bot.send_message(call.message.chat.id, "🗺 *All Menus* — Select a section:",
                      parse_mode="Markdown", reply_markup=all_menus_keyboard())
@@ -925,7 +951,7 @@ def get_file_id(msg):
     elif msg.voice:    fid = msg.voice.file_id
     else: return
     bot.reply_to(msg, f"✅ `file_id`:\n`{fid}`", parse_mode="Markdown")
- 
+
 # ─── FALLBACK HANDLER ─────────────────────────────────────
  
 @bot.message_handler(func=lambda msg: True)
