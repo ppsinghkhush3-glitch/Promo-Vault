@@ -3,6 +3,7 @@ import json
 import os
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 
@@ -881,8 +882,7 @@ def gate(msg):
     bot.send_message(msg.chat.id, "Use /start to open the menu.")
  
 # ─── RUNTIME ──────────────────────────────────────────────
- if __name__ == "__main__":
-    import time
+if __name__ == "__main__":
     print("Bot started. Polling...")
     while True:
         try:
