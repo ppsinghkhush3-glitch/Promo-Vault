@@ -22,7 +22,6 @@ CHANNELS = [
     {"id": -1003668995323, "name": "𝐋𝐄𝐆𝐄𝐍𝐃",       "link": "https://t.me/legend_vaultchat"},
     {"id": -1003847326887, "name": "सब्जी मंडी",    "link": "https://t.me/+owKZvyuQTPQwMjUx"},
     {"id": -1002741742738, "name": "𝙱 𝙳 𝙷",        "link": "https://t.me/+DrBl_OsN_F1hODAx"},
-    {"id": -1003982763602, "name": "𝐀𝐧𝐧𝐞𝐁𝐞𝐥𝐥𝐚",    "link": "https://t.me/AnnebellaOfficialchat"},
 ]
  
 MENU_ITEMS = [
