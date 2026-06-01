@@ -4,6 +4,9 @@ import os
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 import time
+import threading
+from flask import Flask
+app = Flask(__name__)
 
 load_dotenv()
 
@@ -960,7 +963,25 @@ def gate(msg):
     if is_admin(msg.from_user.id): return
     increment_stat("messages")
     bot.send_message(msg.chat.id, "Use /start to open the menu.")
- 
+
+@app.route("/")
+def home(): return "OK", 200
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
+# ─── RUNTIME ──────────────────────────────────────────────
+if __name__ == "__main__":
+    threading.Thread(target=run_flask, daemon=True).start()
+    print("Bot started. Polling...")
+    while True:
+        try:
+            bot.infinity_polling(timeout=60, long_polling_timeout=30)
+        except Exception as e:
+            print(f"Polling crashed: {e}")
+            time.sleep(5)
+
 # ─── RUNTIME ──────────────────────────────────────────────
 if __name__ == "__main__":
     print("Bot started. Polling...")
