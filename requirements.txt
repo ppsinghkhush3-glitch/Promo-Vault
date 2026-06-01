@@ -2,3 +2,4 @@ pyTelegramBotAPI
 telethon
 uv
 python-dotenv
+flask
